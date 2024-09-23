@@ -400,7 +400,7 @@
 
 		// 改行で分割して配列にする
 		// ついでに全角英数字を半角に変換
-		$program_array = explode("\r\n", mb_convert_kana($program_data, 'as', 'UTF-8'));
+		$program_array = explode("\r\n", mb_convert_kana($program_data, 'asKV', 'UTF-8'));
 
 		// 行ごとに処理
 		foreach ($program_array as $key => $value) {
@@ -662,13 +662,13 @@
 						// 衝突回避でリモコン番号が衝突したら元番号 + 20にする
 						if (empty($ch_T[strval($value[3] . '_1')])){
 							// チャンネル名
-							$ch_T[strval($value[3] . '_1')] = mb_convert_kana($value[0], 'as');
+							$ch_T[strval($value[3] . '_1')] = mb_convert_kana($value[0], 'asKV');
 							// サービスID (SID)
-							$sid_T[strval($value[3] . '_1')] = mb_convert_kana($value[5], 'as');
+							$sid_T[strval($value[3] . '_1')] = mb_convert_kana($value[5], 'asKV');
 							// ネットワークID (NID・ONID)
-							$onid_T[strval($value[3] . '_1')] = mb_convert_kana($value[6], 'as');
+							$onid_T[strval($value[3] . '_1')] = mb_convert_kana($value[6], 'asKV');
 							// トランスポートストリームID (TSID)
-							$tsid_T[strval($value[3] . '_1')] = mb_convert_kana($value[7], 'as');
+							$tsid_T[strval($value[3] . '_1')] = mb_convert_kana($value[7], 'asKV');
 						// 衝突した場合
 						} else {
 							// 20以降のリモコン番号にしさらに被ってたら+20する
@@ -677,13 +677,13 @@
 								$chcount += 20; // 足す
 							}
 							// チャンネル名
-							$ch_T[strval($value[3] + $chcount . '_1')] = mb_convert_kana($value[0], 'as');
+							$ch_T[strval($value[3] + $chcount . '_1')] = mb_convert_kana($value[0], 'asKV');
 							// サービスID (SID)
-							$sid_T[strval($value[3] + $chcount . '_1')] = mb_convert_kana($value[5], 'as');
+							$sid_T[strval($value[3] + $chcount . '_1')] = mb_convert_kana($value[5], 'asKV');
 							// ネットワークID (NID・ONID)
-							$onid_T[strval($value[3] + $chcount . '_1')] = mb_convert_kana($value[6], 'as');
+							$onid_T[strval($value[3] + $chcount . '_1')] = mb_convert_kana($value[6], 'asKV');
 							// トランスポートストリームID (TSID)
-							$tsid_T[strval($value[3] + $chcount . '_1')] = mb_convert_kana($value[7], 'as');
+							$tsid_T[strval($value[3] + $chcount . '_1')] = mb_convert_kana($value[7], 'asKV');
 						}
 					// サブチャンネルをセット (サブチャンネル表示がオンになっている場合のみ)
 					} else if ($value[4] != 192 and $value[4] != 2 and isSettingsItem('subchannel_show', true)){
@@ -693,13 +693,13 @@
 							$subchcount++; // 足す
 						}
 						// チャンネル名
-						$ch_T[strval($value[3] .'_'. $subchcount)] = mb_convert_kana($value[0], 'as');
+						$ch_T[strval($value[3] .'_'. $subchcount)] = mb_convert_kana($value[0], 'asKV');
 						// サービスID (SID)
-						$sid_T[strval($value[3] .'_'. $subchcount)] = mb_convert_kana($value[5], 'as');
+						$sid_T[strval($value[3] .'_'. $subchcount)] = mb_convert_kana($value[5], 'asKV');
 						// ネットワークID (NID・ONID)
-						$onid_T[strval($value[3] .'_'. $subchcount)] = mb_convert_kana($value[6], 'as');
+						$onid_T[strval($value[3] .'_'. $subchcount)] = mb_convert_kana($value[6], 'asKV');
 						// トランスポートストリームID (TSID)
-						$tsid_T[strval($value[3] .'_'. $subchcount)] = mb_convert_kana($value[7], 'as');
+						$tsid_T[strval($value[3] .'_'. $subchcount)] = mb_convert_kana($value[7], 'asKV');
 					}
 				}
 
@@ -737,13 +737,13 @@
 						(($value[8] == 1 and !isset($ch_S[strval($value[5])])) or isSettingsItem('subchannel_show', true))){
 						// 全角は半角に直す
 						// チャンネル名
-						$ch_S[strval($value[5])] = mb_convert_kana($value[0], 'as');
+						$ch_S[strval($value[5])] = mb_convert_kana($value[0], 'asKV');
 						// サービスID (SID)
-						$sid_S[strval($value[5])] = mb_convert_kana($value[5], 'as');
+						$sid_S[strval($value[5])] = mb_convert_kana($value[5], 'asKV');
 						// ネットワークID (NID・ONID)
-						$onid_S[strval($value[5])] = mb_convert_kana($value[6], 'as');
+						$onid_S[strval($value[5])] = mb_convert_kana($value[6], 'asKV');
 						// トランスポートストリームID (TSID)
-						$tsid_S[strval($value[5])] = mb_convert_kana($value[7], 'as');
+						$tsid_S[strval($value[5])] = mb_convert_kana($value[7], 'asKV');
 					}
 				}
 
@@ -767,23 +767,23 @@
 						// BS-TBS と QVC バッティング問題
 						if (intval($value[5]) !== 161){
 							// チャンネル名
-							$ch_CS[strval($value[5])] = mb_convert_kana($value[0], 'as');
+							$ch_CS[strval($value[5])] = mb_convert_kana($value[0], 'asKV');
 							// サービスID (SID)
-							$sid_CS[strval($value[5])] = mb_convert_kana($value[5], 'as');
+							$sid_CS[strval($value[5])] = mb_convert_kana($value[5], 'asKV');
 							// ネットワークID (NID・ONID)
-							$onid_CS[strval($value[5])] = mb_convert_kana($value[6], 'as');
+							$onid_CS[strval($value[5])] = mb_convert_kana($value[6], 'asKV');
 							// トランスポートストリームID (TSID)
-							$tsid_CS[strval($value[5])] = mb_convert_kana($value[7], 'as');
+							$tsid_CS[strval($value[5])] = mb_convert_kana($value[7], 'asKV');
 						// QVC のみ (チャンネル衝突避け)
 						} else {
 							// チャンネル名
-							$ch_CS['161cs'] = mb_convert_kana($value[0], 'as');
+							$ch_CS['161cs'] = mb_convert_kana($value[0], 'asKV');
 							// サービスID (SID)
-							$sid_CS['161cs'] = mb_convert_kana($value[5], 'as');
+							$sid_CS['161cs'] = mb_convert_kana($value[5], 'asKV');
 							// ネットワークID (NID・ONID)
-							$onid_CS['161cs'] = mb_convert_kana($value[6], 'as');
+							$onid_CS['161cs'] = mb_convert_kana($value[6], 'asKV');
 							// トランスポートストリームID (TSID)
-							$tsid_CS['161cs'] = mb_convert_kana($value[7], 'as');
+							$tsid_CS['161cs'] = mb_convert_kana($value[7], 'asKV');
 						}
 					}
 				}
