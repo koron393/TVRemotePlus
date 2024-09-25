@@ -21,8 +21,15 @@
 		if (!empty($EDCB_http_url)) {
 
 			// 局ロゴの URL
-			$logo_url = $EDCB_http_url.'api/logo?onid='.$logo_onid.'&sid='.$logo_sid;
-			$logo_url_fallback = $EDCB_http_url.'EMWUI/logo.lua?onid='.$logo_onid.'&sid='.$logo_sid;
+			if (!$Use_EPGStation) {
+				// EDCB API
+				$logo_url = $EDCB_http_url.'api/logo?onid='.$logo_onid.'&sid='.$logo_sid;
+				$logo_url_fallback = $EDCB_http_url.'EMWUI/logo.lua?onid='.$logo_onid.'&sid='.$logo_sid;
+			} else {
+				// EPGStation API
+				$logo_url = $EDCB_http_url.'api/channels/'.$logo_onid.sprintf('%05d', $logo_sid).'/logo';
+				$logo_url_fallback = $EDCB_http_url.'api/services/'.$logo_onid.sprintf('%05d', $logo_sid).'/logo';
+			}
 
 			// 局ロゴを取得
 			$logo = @file_get_contents($logo_url, false, $ssl_context);
