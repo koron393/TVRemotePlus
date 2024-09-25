@@ -1,7 +1,7 @@
 <?php
 
 	// Apache環境変数に deflate(gzip) 無効をセット
-	apache_setenv('no-gzip', '1');
+	//apache_setenv('no-gzip', '1');
 
 	// レスポンスをバッファに貯める
 	ob_start();
