@@ -918,88 +918,40 @@
 	// $exclude_tstask を true に設定すると終了対象から TSTask を除外する
 	function stream_stop($stream, $allstop = false, $exclude_tstask = false) {
 
-		global $udp_port, $arib_subtitle_timedmetadater_exe, $ffmpeg_exe, $qsvencc_exe, $nvencc_exe, $vceencc_exe, $tstask_exe, $tstaskcentreex_path, $segment_folder, $TSTask_shutdown;
+		global $udp_port, $segment_folder;
+		global $base_dir;
 
-		// 全てのストリームを終了する
+		// 全てのストリームを終了する場合
 		if ($allstop) {
-
-			// arib-subtitle-timedmetadater を終了する
-			win_exec("taskkill /F /IM {$arib_subtitle_timedmetadater_exe}");
-
-			// ffmpeg を終了する
-			win_exec("taskkill /F /IM {$ffmpeg_exe}");
-
-			// QSVEncC を終了する
-			win_exec("taskkill /F /IM {$qsvencc_exe}");
-
-			// NVEncC を終了する
-			win_exec("taskkill /F /IM {$nvencc_exe}");
-
-			// VCEEncC を終了する
-			win_exec("taskkill /F /IM {$vceencc_exe}");
-
-			// TSTask を終了する
-			if ($exclude_tstask === false) { // TSTask を終了する場合のみ実行
-
-				if ($TSTask_shutdown == 'true') { // 強制終了
-
-					win_exec("taskkill /F /IM {$tstask_exe}");
-
-				} else { // 通常終了
-
-					// 起動している TSTask のプロセスを取得
-					exec("\"{$tstaskcentreex_path}\" -m {$tstask_exe} -c list", $tstask_process_list);
-
-					// TSTask のプロセスごとに
-					foreach ($tstask_process_list as $value) {
-
-						// PID を（強引に）取得
-						$tstask_pid = intval(str_replace('PID:', '', explode(' ', $value)[0]));
-
-						// TSTaskCentreEx で EndTask コマンドを送信
-						win_exec("\"{$tstaskcentreex_path}\" -p {$tstask_pid} -c EndTask");
-					}
-				}
-			}
-
-			// フォルダ内の TS を削除
-			exec("pushd \"{$segment_folder}\" && del stream{$stream}*.ts /S");
-
-		// このストリームを終了する
+			$pgrep_key = "TVRP\({$udp_port}\)";
 		} else {
+			$pgrep_key = "TVRP\({$udp_port}\):Encoder\({$stream}\)";
+		}
 
-			// エンコーダー検索用コメントを使ってエンコーダーを終了させる
-			$parent_pids = [];
-			exec('wmic process where "commandline like \'% [r]em TVRP('.$udp_port.'):Encoder('.$stream.')%\'" get processid 2>nul | findstr /b [1-9]', $parent_pids);
-			// 親プロセスごとに実行
-			foreach ($parent_pids as $parent_pid) {
-				// すべての子プロセスを終了
+		// エンコーダー検索用コメントを使ってエンコーダーを終了させる
+		$parent_pids = [];
+		exec("pgrep -f '{$pgrep_key}'", $parent_pids);
+		// 親プロセスごとに実行
+		foreach ($parent_pids as $parent_pid) {
+			// 子プロセスごとに終了
+			$cmd_pids = [];
+			exec("pgrep -P {$parent_pid}", $cmd_pids);
+			foreach ($cmd_pids as $cmd_pid) {
+				// エンコードプロセス終了
 				$encoder_pids = [];
-				exec('wmic process where "parentprocessid = '.(int)$parent_pid.'" get processid 2>nul | findstr /b [1-9]', $encoder_pids);
+				exec("pgrep -nP {$cmd_pid}", $encoder_pids);
 				foreach ($encoder_pids as $encoder_pid) {
 					if ($encoder_pid > 0) {
-						win_exec("taskkill /F /PID {$encoder_pid}");
+						shell_exec("kill -s KILL {$encoder_pid}");
 					}
 				}
-				// 親プロセスを終了
-				win_exec("taskkill /F /PID {$parent_pid}");
+				// 子プロセスを終了
+				shell_exec("kill -s KILL {$cmd_pid}");
 			}
-
-			// TSTask を終了する
-			if ($exclude_tstask === false) { // TSTask を終了する場合のみ実行
-				// 現在のストリームの TSTask の PID
-				$tstask_pid = getTSTaskPID($stream);
-				if ($tstask_pid !== -1) {
-					if ($TSTask_shutdown == 'true') { // 強制終了
-						win_exec("taskkill /F /PID {$tstask_pid}");
-					} else { // 通常終了
-						// TSTaskCentreEx で EndTask コマンドを送信
-						win_exec("\"$tstaskcentreex_path\" -p {$tstask_pid} -c EndTask");
-					}
-				}
-			}
-
-			// フォルダ内のTSを削除
-			exec("pushd \"{$segment_folder}\" && del stream{$stream}*.ts /S");
+			// 親プロセスを終了
+			shell_exec("kill -s KILL {$parent_pid}");
 		}
+
+		// フォルダ内のTSを削除
+		shell_exec("pushd \"{$segment_folder}\" && rm /f stream{$stream}*.ts");
 	}
