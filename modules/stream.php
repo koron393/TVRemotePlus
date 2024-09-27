@@ -887,7 +887,7 @@
 
 		// エンコードコマンド
 		$stream_cmd = (
-			($is_mp4_or_mkv === false ? "sh -c '{$ast_cmd} | {$tsreadex_cmd} | {$stream_cmd}'" : "sh -c '{$stream_cmd}'")
+			($is_mp4_or_mkv === false ? "sh -c '{$ast_cmd} | {$tsreadex_cmd} | {$stream_cmd} &'" : "sh -c '{$stream_cmd} &'")
 		);
 
 		// ログを書き出すかどうか
