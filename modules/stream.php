@@ -887,8 +887,7 @@
 
 		// エンコードコマンド
 		$stream_cmd = (
-			"start \"{$encoder} Encoding...\" ".($encoder_window == 'true' ? '' : '/B /min').' '.
-			'cmd.exe /C "'.($is_mp4_or_mkv === false ? win_exec_escape($ast_cmd).' | '.$tsreadex_cmd.' | ' : '').win_exec_escape($stream_cmd)
+			($is_mp4_or_mkv === false ? "sh -c '{$ast_cmd} | {$tsreadex_cmd} | {$stream_cmd}'" : "sh -c '{$stream_cmd}'")
 		);
 
 		// ログを書き出すかどうか
@@ -897,17 +896,17 @@
 			// 既にエンコーダーのログがあれば削除する
 			if (file_exists("{$base_dir}logs/stream{$stream}.encoder.log")) {
 				// PHP の unlink() 関数では削除に失敗する事があるため、del コマンドを使って削除する
-				exec("del {$base_dir}logs/stream{$stream}.encoder.log");
+				shell_exec("rm {$base_dir}logs/stream{$stream}.encoder.log");
 			}
 
-			$stream_cmd .= " > {$base_dir}logs/stream{$stream}.encoder.log 2>&1";
+			$stream_cmd .= " >> {$base_dir}logs/stream{$stream}.encoder.log 2>&1";
 		}
 
 		// エンコーダー検索用コメントを含める
-		$stream_cmd .= " & rem TVRP({$udp_port}):Encoder({$stream})\"";
+		$stream_cmd .= " & # TVRP({$udp_port}):Encoder({$stream})";
 
 		// ストリームを開始する
-		win_exec("pushd \"{$segment_folder}\" && {$stream_cmd}");
+		shell_exec("pushd \"{$segment_folder}\" && {$stream_cmd}");
 
 		// エンコードコマンドを返す
 		return $stream_cmd;
