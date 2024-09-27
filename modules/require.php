@@ -121,7 +121,7 @@ $tstaskcentreex_path = $base_dir.'bin/TSTaskCentreEx/'.$tstaskcentreex_exe;
 
 // arib-subtitle-timedmetadater の名前とパス
 $arib_subtitle_timedmetadater_exe = 'arib-subtitle-timedmetadater.exe';
-$arib_subtitle_timedmetadater_path = $base_dir.'bin/arib-subtitle-timedmetadater/'.$arib_subtitle_timedmetadater_exe;
+$arib_subtitle_timedmetadater_path = '/usr/bin/arib-subtitle-timedmetadater';
 
 // asyncbuf の名前とパス
 $asyncbuf_exe = 'asyncbuf.exe';
@@ -129,31 +129,31 @@ $asyncbuf_path = $base_dir.'bin/arib-subtitle-timedmetadater/'.$asyncbuf_exe;
 
 // tsreadex の名前とパス
 $tsreadex_exe = 'tsreadex.exe';
-$tsreadex_path = $base_dir.'bin/tsreadex/'.$tsreadex_exe;
+$tsreadex_path = '/usr/bin/tsreadex';
 
 // rplsinfo の名前とパス
-$rplsinfo_exe =  'rplsinfo-tvrp.exe';
-$rplsinfo_path =  $base_dir.'bin/rplsinfo/'.$rplsinfo_exe;
+$rplsinfo_exe = 'rplsinfo-tvrp.exe';
+$rplsinfo_path = $base_dir.'bin/rplsinfo/'.$rplsinfo_exe;
 
 // ffmpeg の名前とパス
 $ffmpeg_exe =  'ffmpeg-tvrp.exe';
-$ffmpeg_path = $base_dir.'bin/FFmpeg/'.$ffmpeg_exe;
+$ffmpeg_path = '/usr/bin/ffmpeg';
 
 // ffprobe の名前とパス
 $ffprobe_exe =  'ffprobe-tvrp.exe';
-$ffprobe_path = $base_dir.'bin/FFmpeg/'.$ffprobe_exe;
+$ffprobe_path = '/usr/bin/ffprobe';
 
 // QSVEncC の名前とパス
 $qsvencc_exe = 'QSVEncC-tvrp.exe';
-$qsvencc_path =  $base_dir.'bin/QSVEncC/'.$qsvencc_exe;
+$qsvencc_path = $base_dir.'bin/QSVEncC/'.$qsvencc_exe;
 
 // NVEncC の名前とパス
 $nvencc_exe = 'NVEncC-tvrp.exe';
-$nvencc_path =  $base_dir.'bin/NVEncC/'.$nvencc_exe;
+$nvencc_path = $base_dir.'bin/NVEncC/'.$nvencc_exe;
 
 // VCEEncC の名前とパス
 $vceencc_exe = 'VCEEncC-tvrp.exe';
-$vceencc_path =  $base_dir.'bin/VCEEncC/'.$vceencc_exe;
+$vceencc_path = $base_dir.'bin/VCEEncC/'.$vceencc_exe;
 
 
 // ***** 設定読み込み *****
@@ -185,4 +185,3 @@ if ($reverse_proxy and !empty($reverse_proxy_url)){
 	$OAUTH_CALLBACK = false;
 
 }
-
