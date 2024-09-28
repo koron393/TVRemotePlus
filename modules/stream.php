@@ -191,7 +191,7 @@
 	}
 
 	// ライブ配信を開始する
-	function stream_start($stream, $ch, $sid, $tsid, $BonDriver, $quality, $encoder, $subtitle) {
+	function stream_start($stream, $ch, $sid, $onid, $BonDriver, $quality, $encoder, $subtitle) {
 
 		global $inifile, $udp_port, $ffmpeg_path, $qsvencc_path, $nvencc_path, $vceencc_path, $tstask_path, $tstaskcentreex_path, $arib_subtitle_timedmetadater_path, $asyncbuf_path, $tsreadex_path, $segment_folder, $hlslive_time, $hlslive_list, $base_dir, $encoder_log, $encoder_window, $TSTask_window, $EDCB_http_url;
 
@@ -452,7 +452,7 @@
 		$tstask_cmd = '';
 
 		// EPGStation URL を作成
-		$epgstation_url = $EDCB_http_url.'/api/streams/live/'.$tsid.sprintf('%05d', $sid).'/m2ts?mode=2';
+		$epgstation_url = $EDCB_http_url.'/api/streams/live/'.$onid.sprintf('%05d', $sid).'/m2ts?mode=2';
 		// 念のため余計なスラッシュを除去
 		$epgstation_url = preg_replace('|/+|', '/', $epgstation_url);
 		// EPGStation からストリームを取得

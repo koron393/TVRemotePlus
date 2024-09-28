@@ -149,7 +149,7 @@
 				}
 
 				// ストリーミング開始
-				list($stream_cmd, $tstask_cmd) = stream_start($stream, $ini[$stream]['channel'], $sid[$ini[$stream]['channel']], $tsid[$ini[$stream]['channel']], $ini[$stream]['BonDriver'], $ini[$stream]['quality'], $ini[$stream]['encoder'], $ini[$stream]['subtitle']);
+				list($stream_cmd, $tstask_cmd) = stream_start($stream, $ini[$stream]['channel'], $sid[$ini[$stream]['channel']], $onid[$ini[$stream]['channel']], $ini[$stream]['BonDriver'], $ini[$stream]['quality'], $ini[$stream]['encoder'], $ini[$stream]['subtitle']);
 
 				// 準備中用の動画を流すためにm3u8をコピー
 				if ($silent == 'true'){
