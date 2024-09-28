@@ -193,57 +193,13 @@
 	// ライブ配信を開始する
 	function stream_start($stream, $ch, $sid, $tsid, $BonDriver, $quality, $encoder, $subtitle) {
 
-		global $inifile, $udp_port, $ffmpeg_path, $qsvencc_path, $nvencc_path, $vceencc_path, $tstask_path, $tstaskcentreex_path, $arib_subtitle_timedmetadater_path, $asyncbuf_path, $tsreadex_path, $segment_folder, $hlslive_time, $hlslive_list, $base_dir, $encoder_log, $encoder_window, $TSTask_window;
+		global $inifile, $udp_port, $ffmpeg_path, $qsvencc_path, $nvencc_path, $vceencc_path, $tstask_path, $tstaskcentreex_path, $arib_subtitle_timedmetadater_path, $asyncbuf_path, $tsreadex_path, $segment_folder, $hlslive_time, $hlslive_list, $base_dir, $encoder_log, $encoder_window, $TSTask_window, $EDCB_http_url;
 
 		// 設定ファイル読み込み
 		$settings = json_decode(file_get_contents_lock_sh($inifile), true);
 
-		// UDPポート
-		$stream_port = $udp_port + intval($stream);
-
-		// 以前の state が ONAir (TSTask を再利用できる)
-		if ($settings[strval($stream)]['state'] === 'ONAir') {
-
-			// 事前に前のストリームを終了する
-			// TSTask は再利用するため終了させない
-			stream_stop($stream, false, true);
-
-			// ストリーム番号から TSTask の PID を取得
-			// TaskID だと TVRemotePlus の想定と異なる ID になる可能性があるため
-			$tstask_pid = getTSTaskPID($stream);
-
-			// BonDriver が同じなのでチャンネル切り替えのみ
-			if ($settings[strval($stream)]['BonDriver'] == $BonDriver) {
-
-				// TSTaskCentreEx のコマンド
-				$tstaskcentreex_cmd = (
-					// チャンネルをセット
-					"\"{$tstaskcentreex_path}\" -p {$tstask_pid} -c SetChannel -o \"ServiceID:{$sid}|TransportStreamID:{$tsid}\""
-				);
-
-			// BonDriver が違うので BonDriver を読み込み直してからチャンネルを切り替える
-			} else {
-
-				// TSTaskCentreEx のコマンド
-				$tstaskcentreex_cmd = (
-					// BonDriver をロード
-					"\"{$tstaskcentreex_path}\" -p {$tstask_pid} -c LoadBonDriver -o \"FilePath:'{$BonDriver}'\" && ".
-					// チューナーを開く
-					"\"{$tstaskcentreex_path}\" -p {$tstask_pid} -c OpenTuner && ".
-					// チャンネルをセット
-					"\"{$tstaskcentreex_path}\" -p {$tstask_pid} -c SetChannel -o \"ServiceID:{$sid}|TransportStreamID:{$tsid}\""
-				);
-			}
-
-		// 以前の state が File か Offline
-		} else {
-
-			// 事前に前のストリームを終了する
-			stream_stop($stream);
-
-			// TSTaskCentreEx のコマンド
-			$tstaskcentreex_cmd = '';
-		}
+		// 事前に前のストリームを終了する
+		stream_stop($stream);
 
 		// 字幕切り替え
 		switch ($subtitle) {
@@ -365,7 +321,7 @@
 		}
 
 		// arib-subtitle-timedmetadater
-		$ast_cmd = "\"{$arib_subtitle_timedmetadater_path}\" -u {$stream_port}";
+		$ast_cmd = "\"{$arib_subtitle_timedmetadater_path}\"";
 
 		// 変換コマンド切り替え
 		switch ($encoder) {
@@ -493,29 +449,14 @@
 		}
 
 		// 通常起動
-		if (empty($tstaskcentreex_cmd)) {
+		$tstask_cmd = '';
 
-			// TSTask.exe を起動する
-			if (file_exists($base_dir.'logs/stream'.$stream.'.tstask.log')) {
-				// 既に TSTask のログがあれば削除する
-				@unlink($base_dir.'logs/stream'.$stream.'.tstask.log');
-			}
-
-			$tstask_cmd = '"'.$tstask_path.'" '.($TSTask_window == 'true' ? '/xclient' : '/min /xclient-').' /udp /port '.$stream_port.' /sid '.$sid.' /tsid '.$tsid.
-						' /d '.$BonDriver.' /sendservice 1 /logfile '.$base_dir.'logs/stream'.$stream.'.tstask.log';
-			$tstask_cmd = 'start "TSTask Process" /B /min cmd.exe /C "'.win_exec_escape($tstask_cmd).' & rem TVRP('.$udp_port.'):TSTask('.$stream.')"';
-			win_exec($tstask_cmd);
-
-		// TSTask にチャンネル切り替えのコマンドを送信
-		} else {
-
-			// start コマンドで非同期実行
-			$tstaskcentreex_cmd = 'start "TSTask Process" /B /min cmd.exe /C "'.win_exec_escape($tstaskcentreex_cmd, true).'"'; // & をエスケープ対象から除外
-			win_exec($tstaskcentreex_cmd);
-		}
-
-		// asyncbuf.exe
-		$asyncbuf_cmd = "\"{$asyncbuf_path}\" 50000000 0";  // 50MB
+		// EPGStation URL を作成
+		$epgstation_url = $EDCB_http_url.'/api/streams/live/'.$tsid.sprintf('%05d', $sid).'/m2ts?mode=2';
+		// 念のため余計なスラッシュを除去
+		$epgstation_url = preg_replace('|/+|', '/', $epgstation_url);
+		// EPGStation からストリームを取得
+		$epgstation_live = 'curl -X GET "'.$epgstation_url.'" -H "accept: video/mp2t"';
 
 		// tsreadex.exe
 		// KonomiTV のエンコードタスク機能からのバックポート
@@ -552,25 +493,25 @@
 		]);
 
 		// エンコードコマンド
-		$stream_cmd = 'start "'.$encoder.' Encoding..." '.($encoder_window == 'true' ? '' : '/B /min').' cmd.exe /C "'.win_exec_escape($ast_cmd).' | '.$asyncbuf_cmd.' | '.$tsreadex_cmd.' | '.win_exec_escape($stream_cmd);
+		$stream_cmd = "sh -c '${epgstation_live} | {$ast_cmd} | {$tsreadex_cmd} | {$stream_cmd}";
 
 		// ログを書き出すかどうか
 		if ($encoder_log == 'true') {
 
 			// 既にエンコーダーのログがあれば削除する
 			if (file_exists("{$base_dir}logs/stream{$stream}.encoder.log")) {
-				// PHP の unlink() 関数では削除に失敗する事があるため、del コマンドを使って削除する
-				exec("del {$base_dir}logs/stream{$stream}.encoder.log");
+				// PHP の unlink() 関数では削除に失敗する事があるため、rm コマンドを使って削除する
+				shell_exec("rm {$base_dir}logs/stream{$stream}.encoder.log");
 			}
 
-			$stream_cmd .= " > {$base_dir}logs/stream{$stream}.encoder.log 2>&1";
+			$stream_cmd .= " >> {$base_dir}logs/stream{$stream}.encoder.log 2>&1";
 		}
 
 		// エンコーダー検索用コメントを含める
-		$stream_cmd .= " & rem TVRP({$udp_port}):Encoder({$stream})\"";
+		$stream_cmd .= " ; echo \"# TVRP({$udp_port}):Encoder({$stream})\" > /dev/null 2>&1'";
 
 		// ストリームを開始する
-		win_exec("pushd \"{$segment_folder}\" && {$stream_cmd}");
+		shell_exec("pushd \"{$segment_folder}\" ; {$stream_cmd} > /dev/null &");
 
 		// エンコードコマンドと TSTask のコマンドを返す
 		if (empty($tstaskcentreex_cmd)) {
