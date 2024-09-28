@@ -895,7 +895,7 @@
 
 			// 既にエンコーダーのログがあれば削除する
 			if (file_exists("{$base_dir}logs/stream{$stream}.encoder.log")) {
-				// PHP の unlink() 関数では削除に失敗する事があるため、del コマンドを使って削除する
+				// PHP の unlink() 関数では削除に失敗する事があるため、rm コマンドを使って削除する
 				shell_exec("rm {$base_dir}logs/stream{$stream}.encoder.log");
 			}
 
