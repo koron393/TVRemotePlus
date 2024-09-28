@@ -887,7 +887,7 @@
 
 		// エンコードコマンド
 		$stream_cmd = (
-			($is_mp4_or_mkv === false ? "sh -c '{$ast_cmd} | {$tsreadex_cmd} | {$stream_cmd} &'" : "sh -c '{$stream_cmd} &'")
+			($is_mp4_or_mkv === false ? "sh -c '{$ast_cmd} | {$tsreadex_cmd} | {$stream_cmd}" : "sh -c '{$stream_cmd}")
 		);
 
 		// ログを書き出すかどうか
@@ -903,10 +903,10 @@
 		}
 
 		// エンコーダー検索用コメントを含める
-		$stream_cmd .= " & # TVRP({$udp_port}):Encoder({$stream})";
+		$stream_cmd .= " ; echo \"# TVRP({$udp_port}):Encoder({$stream})\" > /dev/null 2>&1'";
 
 		// ストリームを開始する
-		shell_exec("pushd \"{$segment_folder}\" && {$stream_cmd}");
+		shell_exec("pushd \"{$segment_folder}\" ; {$stream_cmd} > /dev/null &");
 
 		// エンコードコマンドを返す
 		return $stream_cmd;
